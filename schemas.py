@@ -11,8 +11,8 @@ Model name is converted to lowercase for the collection name:
 - BlogPost -> "blogs" collection
 """
 
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, EmailStr
+from typing import Optional, List
 
 # Example schemas (replace with your own):
 
@@ -41,8 +41,23 @@ class Product(BaseModel):
 # Add your own schemas here:
 # --------------------------------------------------
 
-# Note: The Flames database viewer will automatically:
-# 1. Read these schemas from GET /schema endpoint
-# 2. Use them for document validation when creating/editing
-# 3. Handle all database operations (CRUD) directly
-# 4. You don't need to create any database endpoints!
+class Trip(BaseModel):
+    """Bus trips between cities on a specific date"""
+    from_city: str = Field(..., description="Origin city")
+    to_city: str = Field(..., description="Destination city")
+    date: str = Field(..., description="Trip date in YYYY-MM-DD")
+    bus_operator: str = Field(..., description="Bus company name")
+    departure_time: str = Field(..., description="24h time HH:MM")
+    arrival_time: str = Field(..., description="24h time HH:MM")
+    price: float = Field(..., ge=0, description="Ticket price")
+    seats_total: int = Field(..., ge=1, description="Total seats")
+    seats_available: int = Field(..., ge=0, description="Available seats")
+    amenities: List[str] = Field(default_factory=list, description="Amenities list")
+
+class Booking(BaseModel):
+    """Bookings for a given trip"""
+    trip_id: str = Field(..., description="Trip document ID")
+    passenger_name: str = Field(...)
+    passenger_email: EmailStr = Field(...)
+    seats: int = Field(1, ge=1, le=6, description="Number of seats")
+    status: str = Field("confirmed", description="Booking status")
